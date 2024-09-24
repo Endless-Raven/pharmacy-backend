@@ -49,11 +49,11 @@ const mysql = require("mysql2/promise");
 require('dotenv').config();
 
 const db = mysql.createPool({
-  host: "localhost",
+  host: "versalifepharmacy.c744e6yi8s7w.eu-north-1.rds.amazonaws.com",
   user: "root",
   database: "pharmacy",
-  password: "admin123",
-  // port:"3306",
+  password: "Versalife123*",
+  port:"3306",
   // timezone: 'Z'
 });
 
