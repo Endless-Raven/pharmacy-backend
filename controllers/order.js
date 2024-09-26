@@ -53,16 +53,17 @@ const updateOrder = async (req, res) => {
       WHERE order_id = ?
     `;
 
+    const orderId = req.params.order_id;
     // Values for the SQL query
     const values = [
       req.body.order_date,
       req.body.status,
       req.body.total_amount,
-      req.body.order_id,
+      orderId,
     ];
 
   try {
-    const [result] = await db.query(sql, values,[value]);
+    const [result] = await db.query(sql, values);
     return res.status(200).json({ message: "Order updated successfully.", result });
   } catch (err) {
     console.error("Error updating Order:", err.message); // Log any error messages
