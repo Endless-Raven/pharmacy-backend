@@ -61,6 +61,38 @@ const sendVerification = async (req, res) => {
 };
 
 
+const resendVerification = async (req, res) => {
+  const { email } = req.body;
+  const verificationCode = generateVerificationCode();
+
+  // SQL query to update the code for the existing email
+  const updateSql = `
+    UPDATE temp_users 
+    SET code = ?, created_at = CURRENT_TIMESTAMP 
+    WHERE email = ?
+  `;
+
+  try {
+    // Update the verification code and timestamp for the email
+    const [result] = await db.query(updateSql, [verificationCode, email]);
+
+    // Check if any rows were affected (i.e., if the email exists in the table)
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Email not found in temp_users." });
+    }
+
+    // Send the updated verification email to the user
+    await sendVerificationEmail(email, verificationCode);
+    
+    res.status(200).json({ message: "Verification email resent successfully." });
+
+  } catch (err) {
+    console.error("Error resending email:", err.message);
+    res.status(500).json({ message: "Error resending verification email." });
+  }
+};
+
+
 
 
 const verifyAndAddUser = async (req, res) => {
@@ -114,6 +146,8 @@ const verifyAndAddUser = async (req, res) => {
     return res.status(500).json({ message: "Error inside server.", err });
   }
 };
+
+
 
 
 
@@ -258,5 +292,6 @@ module.exports = {
   updateUser,
   deleteUser,
   sendVerification,
-  verifyAndAddUser
+  verifyAndAddUser,
+  resendVerification
 };
