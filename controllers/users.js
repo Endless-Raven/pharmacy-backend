@@ -311,9 +311,11 @@ const updateUser = async (req, res) => {
   console.log("Request body:", req.body); // Log the request body
   const sql = `
       UPDATE users 
-      SET name = ?, email = ?, password_hash = ?, role = ?, phone_number = ?, updated_at = ?
+      SET name = ?, email = ?, password_hash = ?, role = ?, phone_number = ?
       WHERE user_id = ?
     `;
+
+    const userId = req.params.user_id;
 
     // Values for the SQL query
     const values = [
@@ -321,10 +323,8 @@ const updateUser = async (req, res) => {
         req.body.email,
         req.body.password_hash,
         req.body.role,
-        req.body.created_at,
-        req.body.updated_at,
         req.body.phone_number,
-        req.body.user_id,
+        userId,
     ];
 
   try {

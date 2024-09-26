@@ -14,6 +14,22 @@ const getCategory = async (req, res) => {
   }
 };
 
+const getCategorybyName = async (req, res) => {
+
+  const categoryName = req.params.name; 
+
+  const sql = "SELECT * FROM categories WHERE name = ?";
+  
+  try {
+    console.log("get category by name", categoryName);
+    const [rows] = await db.query(sql,[categoryName]);
+    return res.json(rows);
+  } catch (err) {
+    console.error("Error fetching category:", err.message);
+    return res.status(500).json({ message: "Error inside server", err });
+  }
+};
+
 
 // //add product
 const addCategory = async (req, res) => {
@@ -43,16 +59,18 @@ const values = [
 const updateCategory = async (req, res) => {
   console.log("Request body:", req.body); // Log the request body
   const sql = `
-      UPDATE products 
+      UPDATE categories 
       SET name = ?, description = ?
       WHERE category_id = ?
     `;
+
+    const categoryId = req.params.category_id;
 
     // Values for the SQL query
     const values = [
       req.body.name,
       req.body.description,
-      req.body.category_id,
+      categoryId
     ];
 
   try {
@@ -84,6 +102,7 @@ const deleteCategory= async (req, res) => {
 
 module.exports = {
     getCategory,
+    getCategorybyName,
     addCategory,
     updateCategory,
     deleteCategory

@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/", getUsers);//get users
 router.delete("/:user_id",deleteUser);//delete users
-router.put("/",updateUser);//update users
+router.put("/:user_id",updateUser);//update users
 
 //signUp
 router.post("/email",sendVerification);//send email new user
