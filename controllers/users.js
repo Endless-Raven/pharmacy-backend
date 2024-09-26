@@ -92,9 +92,6 @@ const resendVerification = async (req, res) => {
   }
 };
 
-
-
-
 const verifyAndAddUser = async (req, res) => {
   const { email, verificationCode } = req.body;
 
@@ -146,8 +143,6 @@ const verifyAndAddUser = async (req, res) => {
     return res.status(500).json({ message: "Error inside server.", err });
   }
 };
-
-
 
 const sendPasswordResetCode = async (req, res) => {
   const { email } = req.body;
@@ -232,7 +227,6 @@ const verifyCode = async (req, res) => {
 };
 
 
-
 const resetPassword = async (req, res) => {
   const { email, newPassword } = req.body;
 
@@ -263,42 +257,37 @@ const resetPassword = async (req, res) => {
 };
 
 
+//signIn
 
+const signIn = async (req, res) => {
+  const { email, password } = req.body;
 
+  const sql = `SELECT * FROM users WHERE email = ?`;
 
+  try {
+    const [rows] = await db.query(sql, [email]);
 
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "User not found." });
+    }
 
+    const user = rows[0];
 
+    const isMatch = await bcrypt.compare(password, user.password_hash);
 
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid password." });
+    }
 
+    // If password matches, respond with user details (omit password hash)
+    const { password_hash, ...userDetails } = user; // Omit password hash from the response
+    return res.status(200).json({ message: "Sign in successful.", user: userDetails });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  } catch (err) {
+    console.error("Error signing in:", err.message);
+    return res.status(500).json({ message: "Error inside server.", err });
+  }
+};
 
 
 
@@ -315,38 +304,6 @@ const getUsers = async (req, res) => {
     return res.status(500).json({ message: "Error inside server", err });
   }
 };
-
-
-// //add product
-// const addUser = async (req, res) => {
-
-//   console.log("Request body:", req.body); 
-
-//   const sql = `
-//   INSERT INTO users (name, email, password_hash, role, created_at, updated_at, phone_number)
-//   VALUES ( ?,?,?, ?, ?, ?, ?)
-// `;
-
-// const values = [
-//   req.body.name,
-//   req.body.email,
-//   req.body.password_hash,
-//   req.body.role,
-//   req.body.created_at,
-//   req.body.updated_at,
-//   req.body.phone_number,
-// ];
-
-//   try {
-
-
-//     const [result] = await db.query(sql, values);
-//     return res.status(200).json({ message: "user added successfully.", result });
-//   } catch (err) {
-//     console.error("Error adding user:", err.message);
-//     return res.status(500).json({ message: "Error inside server.", err });
-//   }
-// };
 
 
 //update a product
@@ -399,7 +356,6 @@ const deleteUser = async (req, res) => {
 
 module.exports = {
   getUsers,
- // addUser,
   updateUser,
   deleteUser,
   sendVerification,
@@ -407,5 +363,6 @@ module.exports = {
   resendVerification,
   sendPasswordResetCode,
   verifyCode,
-  resetPassword
+  resetPassword,
+  signIn
 };
