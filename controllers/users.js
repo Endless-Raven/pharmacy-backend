@@ -1,5 +1,6 @@
+const { decrypt } = require("dotenv");
 const db = require("../config/db");
-
+const bcrypt = require("bcrypt");
 
 
  const nodemailer = require('nodemailer');
@@ -23,7 +24,6 @@ const sendVerificationEmail = async (email, verificationCode) => {
     subject: 'Verify your email',
     text: `Please use the following code to verify your email: ${verificationCode}`
   };
-  //c w j g g e g q b m q m q t c b
   await transporter.sendMail(mailOptions);
 };
 
@@ -149,7 +149,118 @@ const verifyAndAddUser = async (req, res) => {
 
 
 
+const sendPasswordResetCode = async (req, res) => {
+  const { email } = req.body;
+  const verificationCode = generateVerificationCode();
 
+  // SQL query to check if the email exists in the users table
+  const checkUserSql = `
+    SELECT email FROM users WHERE email = ?
+  `;
+
+  // SQL query to insert or update the verification code in temp_users
+  const updateSql = `
+    UPDATE temp_users 
+    SET code = ?, created_at = CURRENT_TIMESTAMP 
+    WHERE email = ?
+  `;
+
+  const insertSql = `
+    INSERT INTO temp_users (email, code) 
+    VALUES (?, ?)
+  `;
+
+  try {
+    // Check if the email exists in the users table
+    const [userResult] = await db.query(checkUserSql, [email]);
+
+    if (userResult.length === 0) {
+      // If the email is not found, return an error
+      return res.status(404).json({ message: "User not found with this email." });
+    }
+
+    // Check if email already exists in temp_users
+    const [tempUserResult] = await db.query(`SELECT email FROM temp_users WHERE email = ?`, [email]);
+
+    if (tempUserResult.length > 0) {
+      // If the email exists in temp_users, update the code
+      await db.query(updateSql, [verificationCode, email]);
+    } else {
+      // If the email does not exist in temp_users, insert a new record
+      await db.query(insertSql, [email, verificationCode]);
+    }
+
+    // Send the verification email with the reset code to the user
+    await sendVerificationEmail(email, verificationCode);
+
+    res.status(200).json({ message: "Password reset verification email sent successfully." });
+
+  } catch (err) {
+    console.error("Error sending password reset email:", err.message);
+    res.status(500).json({ message: "Error sending password reset verification email." });
+  }
+};
+
+const verifyCode = async (req, res) => {
+  const { email, verificationCode } = req.body;
+
+  // Query the verification code for the email from the temp_users table
+  const getCodeSql = `SELECT code FROM temp_users WHERE email = ?`;
+
+  try {
+    // Retrieve the stored verification code from temp_users table
+    const [rows] = await db.query(getCodeSql, [email]);
+
+    if (rows.length === 0) {
+      return res.status(400).json({ message: "Email not found or not verified." });
+    }
+
+    const storedCode = rows[0].code;
+
+    // Check if the provided verification code matches the stored code
+    if (storedCode !== verificationCode) {
+      return res.status(400).json({ message: "Invalid verification code." });
+    }
+
+    // If the verification code matches, send a success message
+    return res.status(200).json({ message: "Verification successful." });
+
+  } catch (err) {
+    console.error("Error during verification:", err.message);
+    return res.status(500).json({ message: "Error inside server.", err });
+  }
+};
+
+
+
+const resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  // SQL query to update the password for the given email
+  const updatePasswordSql = `
+    UPDATE users 
+    SET password_hash = ?, updated_at = CURRENT_TIMESTAMP 
+    WHERE email = ?
+  `;
+
+  try {
+    // Hash the new password before updating it
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password in the users table
+    const [result] = await db.query(updatePasswordSql, [passwordHash, email]);
+
+    // Optionally, delete the record from temp_users after successful password reset
+    const deleteTempUserSql = `DELETE FROM temp_users WHERE email = ?`;
+    await db.query(deleteTempUserSql, [email]);
+
+    return res.status(200).json({ message: "Password changed successfully.", result });
+
+  } catch (err) {
+    console.error("Error resetting password:", err.message);
+    return res.status(500).json({ message: "Error inside server.", err });
+  }
+};
 
 
 
@@ -293,5 +404,8 @@ module.exports = {
   deleteUser,
   sendVerification,
   verifyAndAddUser,
-  resendVerification
+  resendVerification,
+  sendPasswordResetCode,
+  verifyCode,
+  resetPassword
 };
