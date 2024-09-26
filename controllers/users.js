@@ -201,9 +201,8 @@ const sendPasswordResetCode = async (req, res) => {
   }
 };
 
-
-const changePassword = async (req, res) => {
-  const { email, verificationCode, newPassword } = req.body;
+const verifyCode = async (req, res) => {
+  const { email, verificationCode } = req.body;
 
   // Query the verification code for the email from the temp_users table
   const getCodeSql = `SELECT code FROM temp_users WHERE email = ?`;
@@ -223,16 +222,32 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ message: "Invalid verification code." });
     }
 
-    // If the verification code matches, proceed with updating the user's password
-    const updatePasswordSql = `
-      UPDATE users 
-      SET password_hash = ?, updated_at = CURRENT_TIMESTAMP 
-      WHERE email = ?
-    `;
+    // If the verification code matches, send a success message
+    return res.status(200).json({ message: "Verification successful." });
 
-    const passwordHash = await bcrypt.hash(newPassword,10); // Assuming you have a function to hash passwords
+  } catch (err) {
+    console.error("Error during verification:", err.message);
+    return res.status(500).json({ message: "Error inside server.", err });
+  }
+};
 
-    // Update the user's password
+
+
+const resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  // SQL query to update the password for the given email
+  const updatePasswordSql = `
+    UPDATE users 
+    SET password_hash = ?, updated_at = CURRENT_TIMESTAMP 
+    WHERE email = ?
+  `;
+
+  try {
+    // Hash the new password before updating it
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password in the users table
     const [result] = await db.query(updatePasswordSql, [passwordHash, email]);
 
     // Optionally, delete the record from temp_users after successful password reset
@@ -242,13 +257,10 @@ const changePassword = async (req, res) => {
     return res.status(200).json({ message: "Password changed successfully.", result });
 
   } catch (err) {
-    console.error("Error processing request:", err.message);
+    console.error("Error resetting password:", err.message);
     return res.status(500).json({ message: "Error inside server.", err });
   }
 };
-
-
-
 
 
 
@@ -394,5 +406,6 @@ module.exports = {
   verifyAndAddUser,
   resendVerification,
   sendPasswordResetCode,
-  changePassword
+  verifyCode,
+  resetPassword
 };

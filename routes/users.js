@@ -1,5 +1,5 @@
 const express = require("express");
-const { getUsers, updateUser,resendVerification,sendPasswordResetCode,changePassword, deleteUser,verifyAndAddUser ,sendVerification} = require("../controllers/users");
+const { getUsers, updateUser,resendVerification,sendPasswordResetCode,resetPassword,verifyCode, deleteUser,verifyAndAddUser ,sendVerification} = require("../controllers/users");
 
 const router = express.Router();
 
@@ -10,7 +10,8 @@ router.post("/email",sendVerification);
 router.post("/verifyemail",verifyAndAddUser);
 router.post("/ResendEmail",resendVerification);
 router.post("/ForgotPwdemail",sendPasswordResetCode);
-router.post("/ChangePwd",changePassword);
+router.post("/ChangePwd",resetPassword);
+router.post("/verifyPwd",verifyCode);
 
 module.exports = router;
 
