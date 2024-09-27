@@ -2,8 +2,8 @@ const db = require("../config/db");
 
 // Get all item
 const getCartItem = async (req, res) => {
-  const {user_id} = req.params; // Assuming user_id is passed as a parameter in the request URL
-console.log(user_id);
+  const { user_id } = req.params; // Assuming user_id is passed as a parameter in the request URL
+  console.log(user_id);
   try {
     // 1. Get cart_id from cart table using user_id
     const cartQuery = `SELECT cart_id FROM cart WHERE user_id = ?`;
@@ -29,9 +29,6 @@ console.log(user_id);
     return res.status(500).json({ message: "Error inside server", err });
   }
 };
-
-
-
 
 //add item
 // Add item
@@ -77,7 +74,10 @@ const addCartItem = async (req, res) => {
       SELECT * FROM cart_items
       WHERE cart_id = ? AND product_id = ?`;
 
-    const [existingItemRows] = await db.query(checkItemQuery, [cart_id, product_id]);
+    const [existingItemRows] = await db.query(checkItemQuery, [
+      cart_id,
+      product_id,
+    ]);
 
     if (existingItemRows.length > 0) {
       return res.status(200).json({ message: "Item already added to cart." });
@@ -100,26 +100,14 @@ const addCartItem = async (req, res) => {
 
     const [result] = await db.query(insertQuery, values);
 
-    return res.status(200).json({ message: "Item added successfully.", result });
+    return res
+      .status(200)
+      .json({ message: "Item added successfully.", result });
   } catch (err) {
     console.error("Error adding item:", err.message);
     return res.status(500).json({ message: "Error inside server.", err });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // //add item
 // const addCartItem = async (req, res) => {
@@ -153,43 +141,40 @@ const addCartItem = async (req, res) => {
 
 // Update a item in cart
 const updateCartItem = async (req, res) => {
-    console.log("Request body:", req.body); // Log the request body
-  
-    const sql = `
+  console.log("Request body:", req.body); // Log the request body
+
+  const sql = `
        UPDATE cart_items
       SET  quantity = ?
       WHERE cart_item_id = ?
     `;
-  
-    const cartItemId = req.params.cart_item_id; 
-  
-    const values = [
-        req.body.quantity,
-        cartItemId, 
-    ];
-  
-    try {
-      const [result] = await db.query(sql, values); 
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "item not found." }); 
-      }
-      return res.status(200).json({ message: "item updated successfully.", result });
-    } catch (err) {
-      console.error("Error updating item:", err.message); // Log any error messages
-      return res.status(500).json({ message: "Error inside server.", err });
-    }
-  };
-  
 
-// Delete a item from
+  const cartItemId = req.params.cart_item_id;
+
+  const values = [req.body.quantity, cartItemId];
+
+  try {
+    const [result] = await db.query(sql, values);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "item not found." });
+    }
+    return res
+      .status(200)
+      .json({ message: "item updated successfully.", result });
+  } catch (err) {
+    console.error("Error updating item:", err.message); // Log any error messages
+    return res.status(500).json({ message: "Error inside server.", err });
+  }
+};
+
 const deleteCartItem = async (req, res) => {
-  const itemIds = req.body.cart_item_ids; // Assuming an array of IDs is passed in the request body
+  const itemIds = req.query.cart_item_ids.split(','); // Get the query parameter and split it into an array
 
   if (!itemIds || !itemIds.length) {
     return res.status(400).json({ Message: "No cart_item_id(s) provided." });
   }
 
-  // Generate a dynamic number of placeholders for the SQL query (e.g., ?, ?, ? for 3 items)
+  // Generate placeholders for SQL query
   const placeholders = itemIds.map(() => '?').join(', ');
 
   // Construct the SQL query using the IN clause
@@ -211,10 +196,9 @@ const deleteCartItem = async (req, res) => {
   }
 };
 
-
 module.exports = {
   getCartItem,
   addCartItem,
   updateCartItem,
-  deleteCartItem
+  deleteCartItem,
 };

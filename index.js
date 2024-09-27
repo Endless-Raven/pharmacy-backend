@@ -8,9 +8,12 @@ const categoryRoutes = require("./routes/categories");
 const userRoutes = require("./routes/users");
 const cartRoutes = require("./routes/cart");
 const cartItemRoutes = require("./routes/cartItems");
+const bodyParser = require('body-parser');
 
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json()); 
+
 
 app.use("/products", productRoutes);
 app.use("/orders", orderRoutes);
