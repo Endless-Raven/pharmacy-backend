@@ -9,7 +9,7 @@ router.put("/:user_id",updateUser);//update users
 
 //signUp
 router.post("/email",sendVerification);//send email new user
-router.post("/verifyemail",verifyAndAddUser);//verify code for new user
+router.post("/verifyemail",verifyAndAddUser);//verify code for new user and register user
 router.post("/ResendEmail",resendVerification);//resend if lost new user
 
 //forgot password
