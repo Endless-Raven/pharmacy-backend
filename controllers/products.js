@@ -136,8 +136,8 @@ const addProduct = async (req, res) => {
   console.log("Request body:", req.body); // Log the request body
 
   const sql = `
-  INSERT INTO products (name, description, price, stock_quantity, category_id, rating, color, image_url)
-  VALUES (?, ?, ?, ?, ?, ?, ?,?)
+  INSERT INTO products (name, description, price, stock_quantity, category_id, rating, color, image_url,images_multiple)
+  VALUES (?, ?, ?, ?, ?, ?, ?,?,?)
 `;
 
 const values = [
@@ -150,6 +150,7 @@ const values = [
   req.body.rating,
   req.body.color,
   req.body.image_url,
+  JSON.stringify(req.body.images_multiple),
 ];
 
   try {
@@ -184,7 +185,7 @@ const updateProduct = async (req, res) => {
 
   const sql = `
     UPDATE products 
-    SET name = ?, description = ?, price = ?, stock_quantity = ?, category_id = ?, rating = ?, size = ?, color = ?, image_url=?
+    SET name = ?, description = ?, price = ?, stock_quantity = ?, category_id = ?, rating = ?, size = ?, color = ?, image_url=?, images_multiple=?
     WHERE product_id = ?
   `;
 
@@ -200,6 +201,7 @@ const updateProduct = async (req, res) => {
     req.body.size,
     req.body.color,
     req.body.image_url,
+    JSON.stringify(req.body.images_multiple),
     productId, 
   ];
 
