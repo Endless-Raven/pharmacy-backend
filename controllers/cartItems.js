@@ -2,7 +2,7 @@ const db = require("../config/db");
 
 // Get all item
 const getCartItem = async (req, res) => {
-  const {user_id} = req.body; // Assuming user_id is passed as a parameter in the request URL
+  const {user_id} = req.params; // Assuming user_id is passed as a parameter in the request URL
 console.log(user_id);
   try {
     // 1. Get cart_id from cart table using user_id
@@ -34,6 +34,7 @@ console.log(user_id);
 
 
 //add item
+// Add item
 const addCartItem = async (req, res) => {
   const { user_id, product_id, quantity } = req.body;
 
@@ -71,7 +72,18 @@ const addCartItem = async (req, res) => {
 
     const { name, description, price, image_url } = productRows[0];
 
-    // 3. Insert into cart_items table
+    // 3. Check if the item already exists in the cart_items table
+    const checkItemQuery = `
+      SELECT * FROM cart_items
+      WHERE cart_id = ? AND product_id = ?`;
+
+    const [existingItemRows] = await db.query(checkItemQuery, [cart_id, product_id]);
+
+    if (existingItemRows.length > 0) {
+      return res.status(400).json({ message: "Item already added to cart." });
+    }
+
+    // 4. Insert into cart_items table
     const insertQuery = `
       INSERT INTO cart_items (cart_id, product_id, quantity, item_name, description, price, image_url)
       VALUES (?, ?, ?, ?, ?, ?, ?)`;
@@ -139,7 +151,7 @@ const addCartItem = async (req, res) => {
 //   }
 // };
 
-// Update a item
+// Update a item in cart
 const updateCartItem = async (req, res) => {
     console.log("Request body:", req.body); // Log the request body
   
@@ -174,7 +186,7 @@ const updateCartItem = async (req, res) => {
   };
   
 
-// Delete a item
+// Delete a item from
 const deleteCartItem = async (req, res) => {
   const sql = "DELETE FROM cart_items WHERE cart_item_id = ?;";
   const value = req.params.cart_item_id;
