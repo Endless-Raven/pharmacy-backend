@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/", getProducts);//get all
 router.get("/:product_id", getProductsById);//get by id
-router.get("/products/category/name/:name", getProductsByCategoryName);//get by category name
+router.get("/category/name/:name", getProductsByCategoryName);//get by category name
 router.get("/first", getProductsTwenty);//get 1st 20
 router.get("/byId/:category_id", getProductsByCategoryId);//get by category id
 router.get("/:category_id", getProductsByCategoryIdFive);//get 5 category-wise
