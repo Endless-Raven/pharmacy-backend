@@ -80,7 +80,7 @@ const addCartItem = async (req, res) => {
     const [existingItemRows] = await db.query(checkItemQuery, [cart_id, product_id]);
 
     if (existingItemRows.length > 0) {
-      return res.status(400).json({ message: "Item already added to cart." });
+      return res.status(200).json({ message: "Item already added to cart." });
     }
 
     // 4. Insert into cart_items table
