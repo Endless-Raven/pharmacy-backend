@@ -14,12 +14,17 @@ const getProducts = async (req, res) => {
   }
 };
 
-//get by producy ID
+
+//get by product ID
 const getProductsById = async (req, res) => {
   const productId = req.params.product_id; // Get the product_id from the request parameters
 
   // SQL query to select product by product ID
-  const sql = "SELECT * FROM products WHERE product_id = ?";
+  const sql = `
+  SELECT p.*, c.name AS cname
+  FROM products p 
+  JOIN categories c ON p.category_id = c.category_id 
+  WHERE p.product_id = ?`;
 
   try {
     console.log("Fetching product by ID:", productId);
