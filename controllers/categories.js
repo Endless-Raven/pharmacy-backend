@@ -36,13 +36,14 @@ const addCategory = async (req, res) => {
 
   console.log("Request body:", req.body); 
   const sql = `
-  INSERT INTO categories (name, description)
-  VALUES (?, ?)
+  INSERT INTO categories (name, description,image_url)
+  VALUES (?, ?,?)
 `;
 
 const values = [
   req.body.name,
   req.body.description,
+  req.body.image_url,
 ];
 
   try {    
@@ -60,7 +61,7 @@ const updateCategory = async (req, res) => {
   console.log("Request body:", req.body); // Log the request body
   const sql = `
       UPDATE categories 
-      SET name = ?, description = ?
+      SET name = ?, description = ?, image_url=?
       WHERE category_id = ?
     `;
 
@@ -70,6 +71,7 @@ const updateCategory = async (req, res) => {
     const values = [
       req.body.name,
       req.body.description,
+      req.body.image_url,
       categoryId
     ];
 

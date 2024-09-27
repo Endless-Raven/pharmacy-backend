@@ -21,8 +21,8 @@ const addCartItem = async (req, res) => {
   console.log("Request body:", req.body); // Log the request body
 
   const sql = `
-   INSERT INTO cart_items (cart_id, product_id, quantity, item_name, description, price)
-    VALUES (?, ?, ?, ?, ?, ?)
+   INSERT INTO cart_items (cart_id, product_id, quantity, item_name, description, price,image_url)
+    VALUES (?, ?, ?, ?, ?, ?,?)
 `;
 
 const values = [
@@ -32,8 +32,7 @@ const values = [
     req.body.item_name,
     req.body.description,
     req.body.price,
-    // req.body.created_at,             
-    // req.body.updated_at
+    req.body.image_url,
 ];
 
   try {
@@ -52,7 +51,7 @@ const updateCartItem = async (req, res) => {
   
     const sql = `
        UPDATE cart_items
-      SET product_id = ?, quantity = ?, item_name = ?, description = ?, price = ?
+      SET product_id = ?, quantity = ?, item_name = ?, description = ?, price = ?,image_url =?
       WHERE cart_item_id = ?
     `;
   
@@ -64,6 +63,7 @@ const updateCartItem = async (req, res) => {
         req.body.item_name,
         req.body.description,
         req.body.price,
+        req.body.image_url,
         cartItemId, 
     ];
   
