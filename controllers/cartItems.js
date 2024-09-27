@@ -183,20 +183,34 @@ const updateCartItem = async (req, res) => {
 
 // Delete a item from
 const deleteCartItem = async (req, res) => {
-  const sql = "DELETE FROM cart_items WHERE cart_item_id = ?;";
-  const value = req.params.cart_item_id;
+  const itemIds = req.body.cart_item_ids; // Assuming an array of IDs is passed in the request body
+
+  if (!itemIds || !itemIds.length) {
+    return res.status(400).json({ Message: "No cart_item_id(s) provided." });
+  }
+
+  // Generate a dynamic number of placeholders for the SQL query (e.g., ?, ?, ? for 3 items)
+  const placeholders = itemIds.map(() => '?').join(', ');
+
+  // Construct the SQL query using the IN clause
+  const sql = `DELETE FROM cart_items WHERE cart_item_id IN (${placeholders});`;
 
   try {
-    console.log("delete item");
-    const [result] = await db.query(sql, [value]);
+    console.log("Deleting items:", itemIds);
+    
+    const [result] = await db.query(sql, itemIds); // Use the array of IDs as query parameters
+
     if (result.affectedRows === 0) {
-      return res.status(404).json({ Message: "item not found" });
+      return res.status(404).json({ Message: "No items found to delete." });
     }
-    return res.json({ Message: "item deleted successfully", result });
+
+    return res.json({ Message: `${result.affectedRows} item(s) deleted successfully`, result });
   } catch (err) {
+    console.error("Error deleting items:", err.message);
     return res.status(500).json({ Message: "Error inside server", err });
   }
 };
+
 
 module.exports = {
   getCartItem,
