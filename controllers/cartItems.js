@@ -157,19 +157,14 @@ const updateCartItem = async (req, res) => {
   
     const sql = `
        UPDATE cart_items
-      SET product_id = ?, quantity = ?, item_name = ?, description = ?, price = ?,image_url =?
+      SET  quantity = ?
       WHERE cart_item_id = ?
     `;
   
     const cartItemId = req.params.cart_item_id; 
   
     const values = [
-        req.body.product_id,
         req.body.quantity,
-        req.body.item_name,
-        req.body.description,
-        req.body.price,
-        req.body.image_url,
         cartItemId, 
     ];
   
