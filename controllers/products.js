@@ -14,6 +14,31 @@ const getProducts = async (req, res) => {
   }
 };
 
+//get by producy ID
+const getProductsById = async (req, res) => {
+  const productId = req.params.product_id; // Get the product_id from the request parameters
+
+  // SQL query to select product by product ID
+  const sql = "SELECT * FROM products WHERE product_id = ?";
+
+  try {
+    console.log("Fetching product by ID:", productId);
+    
+    const [rows] = await db.query(sql, [productId]); // Pass the product ID as a parameter to the query
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Product not found." }); // Handle case where no product is found
+    }
+
+    return res.json(rows[0]); // Return the found product
+  } catch (err) {
+    console.error("Error fetching product:", err.message);
+    return res.status(500).json({ message: "Error inside server", err });
+  }
+};
+
+
+//1st 20
 const getProductsTwenty = async (req, res) => {
   // SQL query to select the first 20 products
   const sql = "SELECT * FROM products LIMIT 20";
@@ -29,7 +54,7 @@ const getProductsTwenty = async (req, res) => {
   }
 };
 
-
+//by category ID
 const getProductsByCategoryId = async (req, res) => {
   const categoryId = req.params.category_id; 
 
@@ -52,6 +77,35 @@ const getProductsByCategoryId = async (req, res) => {
   }
 };
 
+//by category Name
+const getProductsByCategoryName = async (req, res) => {
+  const categoryName = req.params.name; // Get the category name from the request parameters
+
+  // SQL query to select products by category name
+  const sql = `
+    SELECT p.* 
+    FROM products p
+    INNER JOIN categories c ON p.category_id = c.category_id
+    WHERE c.name = ?
+  `;
+
+  try {
+    console.log("Fetching products by category name:", categoryName);
+    
+    const [rows] = await db.query(sql, [categoryName]); // Pass the category name as a parameter
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No products found for this category." }); // Handle case where no products are found
+    }
+
+    return res.json(rows); // Return the found products
+  } catch (err) {
+    console.error("Error fetching products:", err.message);
+    return res.status(500).json({ message: "Error inside server", err });
+  }
+};
+
+//first 5 by category ID
 const getProductsByCategoryIdFive = async (req, res) => {
   const categoryId = req.params.category_id; 
 
@@ -180,7 +234,9 @@ const deleteProduct = async (req, res) => {
 
 module.exports = {
   getProducts,
+  getProductsById,
   getProductsByCategoryId,
+  getProductsByCategoryName,
   getProductsTwenty,
   getProductsByCategoryIdFive,
   addProduct,
