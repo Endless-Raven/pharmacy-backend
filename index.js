@@ -23,6 +23,17 @@ app.use("/cart", cartRoutes);
 app.use("/cartItems", cartItemRoutes);
 
 
+// Root route handlers
+app.get('/', (req, res) => {
+  res.send('GET request to the homepage');
+});
+
+app.post('/', (req, res) => {
+  res.send('POST request to the homepage');
+});
+
+// Start the server
 app.listen(3000, () => {
   console.log("Server listening on port 3000");
 });
+
